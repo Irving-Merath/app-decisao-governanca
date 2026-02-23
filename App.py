@@ -86,19 +86,19 @@ camada_ingestao, camada_armazenamento, camada_processamento, camada_semantica_to
 
 if modelo_licenca == "Apenas Comercial / Pago":
     if "Streaming" in cenario_dados:
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Confluent Cloud (Kafka)", "Oracle Cloud / Delta Lake", "Databricks (Spark)", "Atlan"
-        justificativa = "Soluções gerenciadas focadas em streaming em tempo real com governança premium."
+        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Kafka", "Oracle", "Apache Spark", "Atlan"
+        justificativa = "Soluções corporativas focadas em streaming com governança premium."
     else: 
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Fivetran / SaaS", "Delta Lake ou Oracle", "Motores Nativos de Nuvem", "Atlan"
-        justificativa = "Arquitetura corporativa clássica para lotes históricos, priorizando suporte SLA."
-    camada_semantica_tool = "Looker ou dbt Semantic Layer" if exige_semantica else "Não implementada"
+        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Fivetran", "Oracle", "Snowflake", "Atlan"
+        justificativa = "Arquitetura corporativa clássica para lotes históricos. Fivetran ingere, Snowflake processa e Atlan governa."
+    camada_semantica_tool = "Looker" if exige_semantica else "Não implementada"
 else:
     if "Streaming" in cenario_dados:
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Kafka + Schema Registry", "Apache Hudi (Data Lake)", "Apache Spark (Streaming)", "DataHub"
-        justificativa = "Stack livre voltada para eventos. Kafka move os dados e o DataHub mapeia a alta complexidade."
+        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Kafka", "Apache Hudi", "Apache Spark", "DataHub"
+        justificativa = "Stack livre voltada para eventos. Kafka move os dados, Spark processa e o DataHub mapeia a linhagem em tempo real."
     else: 
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Processos Batch (Python/Airflow)", "Apache Iceberg + Parquet", "Trino (Nuvem) + DuckDB (Local)", "OpenMetadata"
-        justificativa = "O Trino filtra Terabytes de dados massivos na nuvem, enquanto o DuckDB permite que o analista processe o resultado localmente no R/Python em altíssima velocidade."
+        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Airflow", "Apache Iceberg", "Trino", "OpenMetadata"
+        justificativa = "O Trino filtra dados massivos armazenados em Iceberg, enquanto o fluxo é orquestrado de forma agendada pelo Apache Airflow."
     camada_semantica_tool = "Cube" if exige_semantica else "Não implementada"
 
 st.write(f"**Visão Geral:** {justificativa}")
