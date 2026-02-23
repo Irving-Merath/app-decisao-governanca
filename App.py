@@ -96,7 +96,6 @@ else:
     mermaid_code += "    C -->|\"Consome Direto\"| E\n"
 mermaid_code += "    F -.- A\n    F -.- B\n    F -.- C\n    F -.- D\n    style F fill:#4a148c,stroke:#fff,color:#fff\n    style D fill:#00695c,stroke:#fff,color:#fff"
 
-# Renderiza Diagrama na Tela
 graphbytes = mermaid_code.encode("utf8")
 base64_bytes = base64.b64encode(graphbytes)
 base64_string = base64_bytes.decode('ascii')
@@ -115,8 +114,6 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
 
     # Arquitetura Macro
     doc.add_heading('2. Visão Macro da Arquitetura', level=1)
-    
-    # NOVO: Texto introdutório dinâmico
     resumo_macro = (
         f"A figura abaixo apresenta o diagrama da arquitetura recomendada, passando pelas camadas de Governança, "
         f"Ingestão de dados brutos, Armazenamento e processamento, e Consumo e negócios. Para este projeto, "
@@ -125,8 +122,6 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
         f"{camada_semantica_tool} para a padronização e consumo."
     )
     doc.add_paragraph(resumo_macro)
-    
-    # Mantendo a justificativa detalhada logo abaixo do resumo
     doc.add_paragraph(f"Detalhe da topologia: {justificativa}")
     
     try:
@@ -139,6 +134,8 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
 
     # Tabela com Links
     doc.add_heading('3. Tabela de Ferramentas Recomendadas', level=1)
+    doc.add_paragraph("A tabela de Ferramentas Recomendadas abaixo apresenta todas as ferramentas que cumpriram os critérios de seleção do relatório (licenciamento e notas de corte configuradas), não apenas as ferramentas que foram indicadas no diagrama visual principal.")
+    
     tabela = doc.add_table(rows=1, cols=4)
     tabela.style = 'Table Grid'
     hdr = tabela.rows[0].cells
@@ -157,25 +154,46 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
     # Justificativas Dinâmicas das Ferramentas
     doc.add_heading('4. Justificativa Detalhada por Ferramenta', level=1)
     
+    # Criar string unificada da arquitetura para descobrir quem é "titular"
+    str_arquitetura = f"{camada_ingestao} {camada_armazenamento} {camada_processamento} {camada_semantica_tool} {camada_governanca}"
+    
+    # Mapear titulares por categoria
+    titulares_cat = {}
+    for _, r in df_filtrado.iterrows():
+        if r['nome'] in str_arquitetura:
+            c = r['categoria']
+            if c not in titulares_cat:
+                titulares_cat[c] = []
+            titulares_cat[c].append(r['nome'])
+            
     for _, row in df_filtrado.iterrows():
         doc.add_heading(f"{row['nome']} ({row['categoria']})", level=2)
         
-        # Textos dinâmicos para suporte
         texto_sup = ""
-        if row['suporte'] == 5: texto_sup = "é amplamente consolidada, com documentação farta, longo histórico de estabilidade no mercado e uma comunidade engajada (ou SLA corporativo premium) para resolução imediata de problemas."
+        if row['suporte'] == 5: texto_sup = "é amplamente consolidada, com documentação farta, longo histórico de estabilidade no mercado e uma comunidade engajada para resolução imediata de problemas."
         elif row['suporte'] == 4: texto_sup = "possui ótima documentação e canais ativos que resolvem a imensa maioria dos casos de uso de pesquisa."
         elif row['suporte'] <= 3: texto_sup = "oferece o suporte básico necessário, porém pode exigir maior conhecimento técnico da equipe interna para configurações avançadas."
         
-        # Textos dinâmicos para flexibilidade
         texto_flex = ""
-        if row['flexibilidade'] == 5: texto_flex = "é altamente customizável, integra-se com facilidade a múltiplas ferramentas analíticas, aceita linguagens variadas (Python, R, SQL, etc.) e foca em padrões abertos."
+        if row['flexibilidade'] == 5: texto_flex = "é altamente customizável, integra-se com facilidade a múltiplas ferramentas analíticas, aceita linguagens variadas e foca em padrões abertos."
         elif row['flexibilidade'] == 4: texto_flex = "oferece excelentes conexões nativas com o ecossistema moderno de dados e atende à maioria dos padrões de engenharia."
         elif row['flexibilidade'] <= 3: texto_flex = "possui um ecossistema mais contido, operando de forma muito eficiente dentro do seu propósito específico, com menos opções de customização extrema."
 
-        paragrafo = f"Foi escolhida a ferramenta {row['nome']} para a categoria de {row['categoria']} porque ela atende perfeitamente aos requisitos do projeto ({row['resumo']}). "
-        paragrafo += f"Sua nota {row['suporte']} para suporte indica que ela {texto_sup} "
-        paragrafo += f"Além disso, sua nota {row['flexibilidade']} para flexibilidade indica que ela {texto_flex}"
-        
+        # Checa se a ferramenta está no diagrama (Titular) ou não (Alternativa)
+        if row['nome'] in str_arquitetura:
+            paragrafo = f"Foi escolhida a ferramenta {row['nome']} para compor o diagrama principal na arquitetura porque ela atende perfeitamente aos requisitos do projeto ({row['resumo']}). "
+            paragrafo += f"Sua nota {row['suporte']} para suporte indica que ela {texto_sup} "
+            paragrafo += f"Além disso, sua nota {row['flexibilidade']} para flexibilidade indica que ela {texto_flex}"
+        else:
+            tits = titulares_cat.get(row['categoria'], [])
+            if tits:
+                nomes_tits = " e ".join(tits)
+                paragrafo = f"A ferramenta escolhida para a arquitetura principal foi a {nomes_tits}, mas a {row['nome']} pode substituir por também ser {row['tipo'].lower()} e especializada em {row['categoria']}. "
+            else:
+                paragrafo = f"Esta ferramenta não apareceu no diagrama principal (que priorizou o cenário de dados selecionado nos filtros), mas a {row['nome']} é uma excelente opção {row['tipo'].lower()} de {row['categoria']}. "
+            
+            paragrafo += f"Com uma nota {row['suporte']} para suporte e nota {row['flexibilidade']} para flexibilidade, ela é uma ótima alternativa caso não seja possível adotar a arquitetura padrão. Isso porque ela {texto_flex} E no quesito de suporte, ela {texto_sup}"
+            
         doc.add_paragraph(paragrafo)
 
     buffer = BytesIO()
