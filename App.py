@@ -7,8 +7,8 @@ from docx import Document
 from docx.shared import Inches
 
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="Arquiteto de Dados: Gerador de Stack", layout="wide")
-st.title("🏗️ Arquiteto Virtual: Ecossistema e Ferramentas")
+st.set_page_config(page_title="Governança de Dados: Gerador de Stack", layout="wide")
+st.title("Arquitetura de dados: Ecossistema e Ferramentas")
 st.markdown("Gere a arquitetura de referência ideal, explore a tabela de ferramentas e baixe o relatório executivo completo (.docx).")
 
 # --- 2. BASE DE CONHECIMENTO (As 17 Ferramentas) ---
@@ -25,8 +25,8 @@ dados = [
     {"nome": "Apache Hudi", "categoria": "Formato de Tabela", "tipo": "Open Source", "link": "https://hudi.apache.org/", "resumo": "Otimizado para atualizações constantes (upserts) em tempo real.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 4},
     {"nome": "Parquet", "categoria": "Formato de Arquivo", "tipo": "Open Source", "link": "https://parquet.apache.org/", "resumo": "Armazenamento colunar, hiper-comprimido, padrão para análises.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 3},
     {"nome": "Apache Spark", "categoria": "Processamento / Big Data", "tipo": "Open Source", "link": "https://spark.apache.org/", "resumo": "Motor líder para processar clusters massivos de dados.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 5},
-    {"nome": "Trino", "categoria": "Motor de Consulta", "tipo": "Open Source", "link": "https://trino.io/", "resumo": "Motor SQL super rápido. Consulta dados onde eles estão.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 5},
-    {"nome": "DuckDB", "categoria": "Motor de Consulta", "tipo": "Open Source", "link": "https://duckdb.org/", "resumo": "Banco analítico ultrarrápido que roda na própria máquina.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 5},
+    {"nome": "Trino", "categoria": "Motor de Consulta", "tipo": "Open Source", "link": "https://trino.io/", "resumo": "Motor SQL para nuvem. Consulta dados pesados direto no Lake.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 5},
+    {"nome": "DuckDB", "categoria": "Motor de Consulta", "tipo": "Open Source", "link": "https://duckdb.org/", "resumo": "Banco analítico ultrarrápido que roda localmente na máquina do analista.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 5},
     {"nome": "Oracle", "categoria": "Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.oracle.com/database/", "resumo": "Banco relacional tradicional, altíssima resiliência e custo.", "facilidade_instalacao": 1, "suporte": 5, "flexibilidade": 2},
     {"nome": "Apache Kafka", "categoria": "Streaming de Dados", "tipo": "Open Source", "link": "https://kafka.apache.org/", "resumo": "Plataforma de streaming de eventos em tempo real.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 5},
     {"nome": "Schema Registry", "categoria": "Streaming de Dados", "tipo": "Open Source", "link": "https://docs.confluent.io/platform/current/schema-registry/index.html", "resumo": "Garante que eventos sigam um formato de contrato rígido.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4}
@@ -66,8 +66,8 @@ else:
         camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Kafka + Schema Registry", "Apache Hudi (Data Lake)", "Apache Spark (Streaming)", "DataHub"
         justificativa = "Stack livre voltada para eventos. Kafka move os dados e o DataHub mapeia a alta complexidade."
     else: 
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Processos Batch (Python/Airflow)", "Apache Iceberg + Parquet", "DuckDB (Local) ou Trino", "OpenMetadata"
-        justificativa = "Infraestrutura robusta de Lakehouse para análises locais e distribuídas de grandes bases."
+        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Processos Batch (Python/Airflow)", "Apache Iceberg + Parquet", "Trino (Nuvem) + DuckDB (Local)", "OpenMetadata"
+        justificativa = "O Trino filtra Terabytes de dados massivos na nuvem, enquanto o DuckDB permite que o analista processe o resultado localmente no R/Python em altíssima velocidade."
     camada_semantica_tool = "Cube" if exige_semantica else "Não implementada"
 
 st.write(f"**Visão Geral:** {justificativa}")
@@ -107,68 +107,76 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
     doc = Document()
     doc.add_heading('Relatório de Arquitetura de Dados', 0)
     
-    # Seção 1: Justificativas Detalhadas
-    doc.add_heading('1. Descrição e Justificativa da Stack', level=1)
+    # Metodologia
+    doc.add_heading('1. Metodologia de Avaliação das Ferramentas', level=1)
+    doc.add_paragraph("As notas de Suporte e Flexibilidade apresentadas neste relatório foram estabelecidas com base nos seguintes critérios técnicos do mercado:")
+    doc.add_paragraph("• Suporte (1 a 5): Avalia o tempo de maturidade da ferramenta, o tamanho e o engajamento da comunidade (para soluções Open Source) ou o nível de serviço corporativo (SLA). Uma nota 5 indica que a ferramenta possui anos no mercado, vasta documentação oficial clara e uma comunidade ativa capaz de solucionar eventuais problemas rapidamente.")
+    doc.add_paragraph("• Flexibilidade (1 a 5): Avalia o grau em que a ferramenta pode ser customizada e integrada ao ecossistema moderno. Uma nota 5 indica que ela oferece APIs abertas, integra-se de forma nativa com as principais linguagens de análise (Python, R, Java, SQL) e utiliza padrões abertos que evitam o aprisionamento tecnológico (vendor lock-in).")
+
+    # Arquitetura Macro
+    doc.add_heading('2. Visão Macro da Arquitetura', level=1)
     
-    doc.add_heading('Governança e Catálogo:', level=2)
-    if camada_governanca == "OpenMetadata":
-        doc.add_paragraph("Foi escolhida a ferramenta OpenMetadata porque ela é open source, apropriada para catálogo, é altamente customizável e focada em colaboração. Seu principal forte é a linhagem de dados nativa, ou seja, é possível ver visualmente de onde o dado saiu, pra onde foi e quais scripts o alteraram no caminho.")
-    elif camada_governanca == "DataHub":
-        doc.add_paragraph("Foi escolhida a ferramenta DataHub porque é uma plataforma open source desenvolvida para suportar ecossistemas altamente complexos que envolvem streaming (como Kafka). Ela garante que todo o fluxo em tempo real fique mapeado e auditável.")
-    else:
-        doc.add_paragraph("Foi escolhida a ferramenta Atlan por ser uma solução comercial focada em facilidade de uso para times de negócio. Ela não exige manutenção técnica e oferece integrações nativas prontas para uso.")
-
-    doc.add_heading('Ingestão de Dados Brutos:', level=2)
-    if "Python/Airflow" in camada_ingestao:
-        doc.add_paragraph("Foi escolhido Python/Airflow (Processos Batch) porque o fluxo analítico depende de bases históricas ou atualizações agendadas em lotes. O Airflow orquestra esses scripts de forma programática e altamente customizável sem custos de licença.")
-    else:
-        doc.add_paragraph(f"Foi escolhido o uso de {camada_ingestao} para garantir confiabilidade no transporte dos dados, suportando grandes volumes de eventos de negócios sem perda de pacotes.")
-
-    doc.add_heading('Armazenamento e Formatos:', level=2)
-    if "Iceberg" in camada_armazenamento:
-        doc.add_paragraph("Foi sugerida a combinação de Apache Iceberg e Parquet. O formato Parquet comprime as informações colunarmente (ideal para pesquisas pesadas), enquanto o Iceberg cria uma camada de controle, permitindo que os pesquisadores consultem o Data Lake com comandos SQL rápidos e transacionais, como se fosse um banco de dados tradicional.")
-    else:
-        doc.add_paragraph(f"A arquitetura utilizará {camada_armazenamento} para garantir que os dados fiquem unificados, seguros e prontos para alimentar a camada de processamento com alta performance.")
-
-    doc.add_heading('Processamento / Consultas:', level=2)
-    if "DuckDB" in camada_processamento:
-        doc.add_paragraph("Foi escolhido o DuckDB e Trino pela revolução que trazem na etapa de pesquisa. O DuckDB roda diretamente na máquina do analista (junto com scripts Python ou R), devorando arquivos em velocidade recorde, sem precisar de infraestrutura pesada.")
-    else:
-        doc.add_paragraph(f"O {camada_processamento} foi o motor escolhido por ser o padrão de mercado para distribuir processamento massivo, capaz de lidar com transformações complexas ou streaming de dados em escala.")
-
-    doc.add_heading('Camada Semântica:', level=2)
-    if exige_semantica:
-        doc.add_paragraph(f"Foi implementada a solução {camada_semantica_tool} para centralizar as regras de pesquisa. Isso significa que variáveis como 'taxa de infecção' não ficarão perdidas em scripts individuais; elas são definidas de forma única na camada semântica e consumidas por qualquer painel ou linguagem, garantindo a veracidade das métricas.")
-    else:
-        doc.add_paragraph("Camada semântica não implementada nesta topologia. As regras de negócio e cálculos de pesquisa serão aplicados diretamente nos painéis ou rotinas de análise de cada usuário.")
-
-    # Seção 2: Imagem do Diagrama
-    doc.add_heading('2. Fluxograma da Arquitetura', level=1)
+    # NOVO: Texto introdutório dinâmico
+    resumo_macro = (
+        f"A figura abaixo apresenta o diagrama da arquitetura recomendada, passando pelas camadas de Governança, "
+        f"Ingestão de dados brutos, Armazenamento e processamento, e Consumo e negócios. Para este projeto, "
+        f"foi selecionado {camada_governanca} para a Governança; {camada_ingestao} para a Ingestão; "
+        f"{camada_armazenamento} e {camada_processamento} para o Armazenamento e processamento; e "
+        f"{camada_semantica_tool} para a padronização e consumo."
+    )
+    doc.add_paragraph(resumo_macro)
+    
+    # Mantendo a justificativa detalhada logo abaixo do resumo
+    doc.add_paragraph(f"Detalhe da topologia: {justificativa}")
+    
     try:
         url_imagem = f"https://mermaid.ink/img/{b64_diagrama}?type=png"
         resposta = requests.get(url_imagem)
         if resposta.status_code == 200:
-            imagem_io = BytesIO(resposta.content)
-            doc.add_picture(imagem_io, width=Inches(6.0))
-        else:
-            doc.add_paragraph("[Erro ao baixar o diagrama online para inclusão no documento.]")
-    except Exception as e:
-        doc.add_paragraph(f"[Aviso: A geração da imagem exige conexão com a internet. Erro: {str(e)}]")
+            doc.add_picture(BytesIO(resposta.content), width=Inches(6.0))
+    except Exception:
+        doc.add_paragraph("[Aviso: Imagem do diagrama indisponível offline.]")
 
-    # Seção 3: Tabela
-    doc.add_heading('3. Lista de Ferramentas Avaliadas', level=1)
-    tabela = doc.add_table(rows=1, cols=3)
+    # Tabela com Links
+    doc.add_heading('3. Tabela de Ferramentas Recomendadas', level=1)
+    tabela = doc.add_table(rows=1, cols=4)
     tabela.style = 'Table Grid'
-    hdr_cells = tabela.rows[0].cells
-    hdr_cells[0].text = 'Ferramenta'
-    hdr_cells[1].text = 'Categoria'
-    hdr_cells[2].text = 'Resumo'
+    hdr = tabela.rows[0].cells
+    hdr[0].text = 'Ferramenta'
+    hdr[1].text = 'Categoria'
+    hdr[2].text = 'Resumo'
+    hdr[3].text = 'Site / Link'
     
     for _, row in df_filtrado.iterrows():
         row_cells = tabela.add_row().cells
         row_cells[0].text = str(row['nome'])
         row_cells[1].text = str(row['categoria'])
         row_cells[2].text = str(row['resumo'])
+        row_cells[3].text = str(row['link'])
+
+    # Justificativas Dinâmicas das Ferramentas
+    doc.add_heading('4. Justificativa Detalhada por Ferramenta', level=1)
+    
+    for _, row in df_filtrado.iterrows():
+        doc.add_heading(f"{row['nome']} ({row['categoria']})", level=2)
+        
+        # Textos dinâmicos para suporte
+        texto_sup = ""
+        if row['suporte'] == 5: texto_sup = "é amplamente consolidada, com documentação farta, longo histórico de estabilidade no mercado e uma comunidade engajada (ou SLA corporativo premium) para resolução imediata de problemas."
+        elif row['suporte'] == 4: texto_sup = "possui ótima documentação e canais ativos que resolvem a imensa maioria dos casos de uso de pesquisa."
+        elif row['suporte'] <= 3: texto_sup = "oferece o suporte básico necessário, porém pode exigir maior conhecimento técnico da equipe interna para configurações avançadas."
+        
+        # Textos dinâmicos para flexibilidade
+        texto_flex = ""
+        if row['flexibilidade'] == 5: texto_flex = "é altamente customizável, integra-se com facilidade a múltiplas ferramentas analíticas, aceita linguagens variadas (Python, R, SQL, etc.) e foca em padrões abertos."
+        elif row['flexibilidade'] == 4: texto_flex = "oferece excelentes conexões nativas com o ecossistema moderno de dados e atende à maioria dos padrões de engenharia."
+        elif row['flexibilidade'] <= 3: texto_flex = "possui um ecossistema mais contido, operando de forma muito eficiente dentro do seu propósito específico, com menos opções de customização extrema."
+
+        paragrafo = f"Foi escolhida a ferramenta {row['nome']} para a categoria de {row['categoria']} porque ela atende perfeitamente aos requisitos do projeto ({row['resumo']}). "
+        paragrafo += f"Sua nota {row['suporte']} para suporte indica que ela {texto_sup} "
+        paragrafo += f"Além disso, sua nota {row['flexibilidade']} para flexibilidade indica que ela {texto_flex}"
+        
+        doc.add_paragraph(paragrafo)
 
     buffer = BytesIO()
     doc.save(buffer)
@@ -193,27 +201,19 @@ else:
     recomendacoes = recomendacoes.sort_values(by='Nota Final', ascending=False)
     
     st.dataframe(
-        recomendacoes[['nome', 'categoria', 'tipo', 'resumo', 'suporte', 'flexibilidade']],
+        recomendacoes[['nome', 'categoria', 'tipo', 'resumo', 'suporte', 'flexibilidade', 'link']],
+        column_config={
+            "nome": "Ferramenta", "categoria": "Categoria", "tipo": "Licença", "resumo": "O que faz?",
+            "suporte": "Suporte (1-5)", "flexibilidade": "Customização (1-5)",
+            "link": st.column_config.LinkColumn("Site Oficial")
+        },
         hide_index=True, use_container_width=True
     )
     
-    # Criando colunas para os botões ficarem lado a lado
     col1, col2 = st.columns([1, 1])
-    
     with col1:
         csv_data = recomendacoes.to_csv(index=False, sep=';', encoding='utf-8-sig')
-        st.download_button(
-            label="📥 Baixar Tabela em CSV",
-            data=csv_data,
-            file_name="ferramentas_arquitetura.csv",
-            mime="text/csv"
-        )
-        
+        st.download_button("📥 Baixar Tabela em CSV", data=csv_data, file_name="ferramentas.csv", mime="text/csv")
     with col2:
         relatorio_docx = gerar_relatorio_word(recomendacoes, base64_string)
-        st.download_button(
-            label="📄 Baixar Relatório Executivo (.docx)",
-            data=relatorio_docx,
-            file_name="Relatorio_Arquitetura_Dados.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        )
+        st.download_button("📄 Baixar Relatório Completo (.docx)", data=relatorio_docx, file_name="Relatorio_Arquitetura.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
