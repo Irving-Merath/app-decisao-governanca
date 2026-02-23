@@ -11,7 +11,7 @@ st.set_page_config(page_title="Governança de Dados: Gerador de Stack", layout="
 st.title("Arquitetura de dados: Ecossistema e Ferramentas")
 st.markdown("Gere a arquitetura de referência ideal, explore a tabela de ferramentas e baixe o relatório executivo completo (.docx).")
 
-# --- 2. BASE DE CONHECIMENTO (As 31 Ferramentas) ---
+# --- 2. BASE DE CONHECIMENTO (As 34 Ferramentas) ---
 dados = [
     {"nome": "OpenMetadata", "categoria": "Catálogo / Governança", "tipo": "Open Source", "link": "https://open-metadata.org/", "resumo": "Catálogo API-first, focado em colaboração e linhagem.", "facilidade_instalacao": 5, "suporte": 4, "flexibilidade": 5},
     {"nome": "DataHub", "categoria": "Catálogo / Governança", "tipo": "Open Source", "link": "https://datahubproject.io/", "resumo": "Plataforma robusta (LinkedIn), excelente para ecossistemas complexos.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 5},
@@ -56,7 +56,11 @@ dados = [
     {"nome": "GitLab", "categoria": "DevOps / CI/CD", "tipo": "Open Source", "link": "https://about.gitlab.com/", "resumo": "Plataforma completa de DevOps em uma única aplicação. Oferece repositório de código fonte (Git) robusto, gestão de projetos e esteiras de CI/CD nativas.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5},
     {"nome": "GitLab Runner", "categoria": "DevOps / CI/CD", "tipo": "Open Source", "link": "https://docs.gitlab.com/runner/", "resumo": "Agente de execução leve e escalável que roda os pipelines de CI/CD definidos no GitLab, automatizando a construção, os testes e o deploy da arquitetura.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
     {"nome": "GitLab Container Registry", "categoria": "DevOps / CI/CD", "tipo": "Open Source", "link": "https://docs.gitlab.com/ee/user/packages/container_registry/", "resumo": "Registro de contêineres seguro e totalmente integrado ao GitLab. Permite armazenar e gerenciar imagens Docker de forma contínua junto ao código-fonte.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 4},
-    {"nome": "Harbor", "categoria": "Infraestrutura / Orquestração", "tipo": "Open Source", "link": "https://goharbor.io/", "resumo": "Registro de contêineres cloud-native confiável. Ele armazena, assina e escaneia imagens Docker em busca de vulnerabilidades, sendo o parceiro ideal do Kubernetes para segurança.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 4}
+    {"nome": "Harbor", "categoria": "Infraestrutura / Orquestração", "tipo": "Open Source", "link": "https://goharbor.io/", "resumo": "Registro de contêineres cloud-native confiável. Ele armazena, assina e escaneia imagens Docker em busca de vulnerabilidades, sendo o parceiro ideal do Kubernetes para segurança.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 4},
+    # --- NOVAS FERRAMENTAS: AJUSTES DO DIAGRAMA ---
+    {"nome": "Apache Airflow", "categoria": "Orquestração / Ingestão", "tipo": "Open Source", "link": "https://airflow.apache.org/", "resumo": "Plataforma padrão-ouro para programar, orquestrar e monitorar fluxos de trabalho (pipelines) de dados em lote.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5},
+    {"nome": "Fivetran", "categoria": "Orquestração / Ingestão", "tipo": "Comercial / Pago", "link": "https://www.fivetran.com/", "resumo": "Serviço gerenciado que sincroniza dados de diversas fontes para o seu Data Warehouse com zero configuração (ELT).", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 3},
+    {"nome": "Snowflake", "categoria": "Processamento / Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.snowflake.com/", "resumo": "Plataforma de dados em nuvem (Data Cloud) que funciona como Data Warehouse gerenciado, ideal para processamento analítico em lote.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 4}
     ]
 df = pd.DataFrame(dados)
 
