@@ -11,7 +11,7 @@ st.set_page_config(page_title="Governança de Dados: Gerador de Stack", layout="
 st.title("Arquitetura de dados: Ecossistema e Ferramentas")
 st.markdown("Gere a arquitetura de referência ideal, explore a tabela de ferramentas e baixe o relatório executivo completo (.docx).")
 
-# --- 2. BASE DE CONHECIMENTO (As 34 Ferramentas) ---
+# --- 2. BASE DE CONHECIMENTO (As 37 Ferramentas) ---
 dados = [
     {"nome": "OpenMetadata", "categoria": "Catálogo / Governança", "tipo": "Open Source", "link": "https://open-metadata.org/", "resumo": "Catálogo API-first, focado em colaboração e linhagem.", "facilidade_instalacao": 5, "suporte": 4, "flexibilidade": 5},
     {"nome": "DataHub", "categoria": "Catálogo / Governança", "tipo": "Open Source", "link": "https://datahubproject.io/", "resumo": "Plataforma robusta (LinkedIn), excelente para ecossistemas complexos.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 5},
@@ -60,7 +60,10 @@ dados = [
     # --- NOVAS FERRAMENTAS: AJUSTES DO DIAGRAMA ---
     {"nome": "Apache Airflow", "categoria": "Orquestração / Ingestão", "tipo": "Open Source", "link": "https://airflow.apache.org/", "resumo": "Plataforma padrão-ouro para programar, orquestrar e monitorar fluxos de trabalho (pipelines) de dados em lote.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5},
     {"nome": "Fivetran", "categoria": "Orquestração / Ingestão", "tipo": "Comercial / Pago", "link": "https://www.fivetran.com/", "resumo": "Serviço gerenciado que sincroniza dados de diversas fontes para o seu Data Warehouse com zero configuração (ELT).", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 3},
-    {"nome": "Snowflake", "categoria": "Processamento / Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.snowflake.com/", "resumo": "Plataforma de dados em nuvem (Data Cloud) que funciona como Data Warehouse gerenciado, ideal para processamento analítico em lote.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 4}
+    {"nome": "Snowflake", "categoria": "Processamento / Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.snowflake.com/", "resumo": "Plataforma de dados em nuvem (Data Cloud) que funciona como Data Warehouse gerenciado, ideal para processamento analítico em lote.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 4},
+    # --- NOVAS FERRAMENTAS: BANCOS NOSQL E GRAFOS ---
+    {"nome": "MongoDB", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://www.mongodb.com/", "resumo": "Banco de dados NoSQL orientado a documentos (JSON). Ideal para receber dados não-estruturados ou semi-estruturados com grande flexibilidade.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
+    {"nome": "Neo4j", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://neo4j.com/", "resumo": "Banco de dados em grafos líder de mercado. Perfeito para mapear relacionamentos complexos, ligações estruturais e redes de conexão.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4}
     ]
 df = pd.DataFrame(dados)
 
@@ -73,6 +76,28 @@ filtro_categoria = st.sidebar.selectbox("0. Filtrar Tabela por Categoria?", cate
 st.sidebar.markdown("---")
 modelo_licenca = st.sidebar.radio("1. Preferência de licenciamento?", ("Mostrar Todos", "Apenas Open Source", "Apenas Comercial / Pago"))
 cenario_dados = st.sidebar.radio("2. Comportamento dos dados?", ("Processamento em Lote (Lakehouse, Histórico)", "Streaming em Tempo Real (Eventos)"))
+
+# --- FILTRO NATUREZA DO ARMAZENAMENTO ---
+natureza_dados = st.sidebar.radio(
+    "Como a organização lida com o armazenamento principal?",
+    (
+        "Dados altamente estruturados (Precisa de banco próprio relacional)",
+        "Dados não-estruturados ou flexíveis de diversas fontes (Documentos/JSON)",
+        "Foco em mapear conexões e relacionamentos complexos (Grafos)",
+        "Análise histórica massiva de bilhões de linhas (Data Lake/Warehouse)"
+    )
+)
+
+# --- FILTRO FOCO DA GOVERNANÇA ---
+foco_governanca = st.sidebar.radio(
+    "Qual é o principal desafio de Governança da organização?",
+    (
+        "Linhagem técnica e mapeamento para engenharia (Foco em TI)",
+        "Glossário, políticas e democratização (Foco em Negócios/Compliance)",
+        "Qualidade de dados automatizada e Master Data Management (Foco em MDM)"
+    )
+)
+
 exige_semantica = st.sidebar.checkbox("3. Implementar Camada Semântica?", value=True)
 
 st.sidebar.markdown("---")
@@ -84,24 +109,58 @@ st.subheader("🗺️ Desenho da Arquitetura Recomendada")
 
 camada_ingestao, camada_armazenamento, camada_processamento, camada_semantica_tool, camada_governanca, justificativa = "", "", "", "", "", ""
 
+# 1. Lógica do Armazenamento (Banco de Dados)
+if natureza_dados == "Dados altamente estruturados (Precisa de banco próprio relacional)":
+    camada_armazenamento = "Oracle" if modelo_licenca == "Apenas Comercial / Pago" else "PostgreSQL"
+    justificativa_banco = f"Para o armazenamento, o {camada_armazenamento} garante integridade relacional rígida. "
+elif natureza_dados == "Dados não-estruturados ou flexíveis de diversas fontes (Documentos/JSON)":
+    camada_armazenamento = "MongoDB"
+    justificativa_banco = "Para o armazenamento, o MongoDB traz flexibilidade NoSQL para documentos variáveis. "
+elif natureza_dados == "Foco em mapear conexões e relacionamentos complexos (Grafos)":
+    camada_armazenamento = "Neo4j"
+    justificativa_banco = "Para o armazenamento, o Neo4j otimiza consultas em redes e relacionamentos estruturais. "
+else:
+    camada_armazenamento = "Snowflake" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Iceberg"
+    justificativa_banco = f"Para o armazenamento analítico massivo, optou-se pelo {camada_armazenamento}. "
+
+# 2. Lógica da Governança
+if foco_governanca == "Glossário, políticas e democratização (Foco em Negócios/Compliance)":
+    camada_governanca = "Collibra" if modelo_licenca == "Apenas Comercial / Pago" else "OpenMetadata"
+    justificativa_gov = f"A governança é liderada pelo {camada_governanca}, focando na democratização e no glossário de negócios. "
+elif foco_governanca == "Qualidade de dados automatizada e Master Data Management (Foco em MDM)":
+    camada_governanca = "Ataccama ONE" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Atlas"
+    justificativa_gov = f"A governança foca em confiabilidade e MDM através do {camada_governanca}, garantindo dados limpos. "
+else: 
+    # Foco em TI e Linhagem Técnica
+    if modelo_licenca == "Apenas Comercial / Pago":
+        camada_governanca = "Rocket Data Intelligence" 
+    else:
+        camada_governanca = "DataHub" if "Streaming" in cenario_dados else "OpenMetadata"
+    justificativa_gov = f"O {camada_governanca} foi escolhido para rastrear a linhagem técnica ponta a ponta para a engenharia. "
+
+# 3. Lógica do Ecossistema (Ingestão e Processamento)
 if modelo_licenca == "Apenas Comercial / Pago":
     if "Streaming" in cenario_dados:
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Kafka", "Oracle", "Apache Spark", "Atlan"
-        justificativa = "Soluções corporativas focadas em streaming com governança premium."
+        camada_ingestao, camada_processamento = "Apache Kafka", "Apache Spark"
+        justificativa_eco = "O Kafka gerencia a mensageria em tempo real, processado pelo Spark. "
     else: 
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Fivetran", "Oracle", "Snowflake", "Atlan"
-        justificativa = "Arquitetura corporativa clássica para lotes históricos. Fivetran ingere, Snowflake processa e Atlan governa."
+        camada_ingestao, camada_processamento = "Fivetran", "Databricks"
+        justificativa_eco = "O Fivetran automatiza a ingestão de lotes, com transformações no Databricks. "
     camada_semantica_tool = "Looker" if exige_semantica else "Não implementada"
 else:
     if "Streaming" in cenario_dados:
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Kafka", "Apache Hudi", "Apache Spark", "DataHub"
-        justificativa = "Stack livre voltada para eventos. Kafka move os dados, Spark processa e o DataHub mapeia a linhagem em tempo real."
+        camada_ingestao, camada_processamento = "Apache Kafka", "Apache Spark"
+        justificativa_eco = "O ecossistema flui com Kafka na mensageria e Spark no processamento contínuo. "
     else: 
-        camada_ingestao, camada_armazenamento, camada_processamento, camada_governanca = "Apache Airflow", "Apache Iceberg", "Trino", "OpenMetadata"
-        justificativa = "O Trino filtra dados massivos armazenados em Iceberg, enquanto o fluxo é orquestrado de forma agendada pelo Apache Airflow."
+        camada_ingestao, camada_processamento = "Apache Airflow", "Trino + DuckDB"
+        justificativa_eco = "O Airflow orquestra as rotinas, sendo processado pelo motor distribuído do Trino e DuckDB. "
     camada_semantica_tool = "Cube" if exige_semantica else "Não implementada"
 
+# Junta a redação final dinamicamente
+justificativa = justificativa_banco + justificativa_eco + justificativa_gov
+
 st.write(f"**Visão Geral:** {justificativa}")
+
 
 mermaid_code = f"""graph LR
     subgraph Ingestao ["Ingestão e Dados Brutos"]
