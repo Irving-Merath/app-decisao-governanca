@@ -11,7 +11,7 @@ st.set_page_config(page_title="Governança de Dados: Gerador de Stack", layout="
 st.title("Arquitetura de dados: Ecossistema e Ferramentas")
 st.markdown("Gere a arquitetura de referência ideal, explore a tabela de ferramentas e baixe o relatório executivo completo (.docx).")
 
-# --- 2. BASE DE CONHECIMENTO (As 37 Ferramentas) ---
+# --- 2. BASE DE CONHECIMENTO (As 39 Ferramentas) ---
 dados = [
     {"nome": "OpenMetadata", "categoria": "Catálogo / Governança", "tipo": "Open Source", "link": "https://open-metadata.org/", "resumo": "Catálogo API-first, focado em colaboração e linhagem.", "facilidade_instalacao": 5, "suporte": 4, "flexibilidade": 5},
     {"nome": "DataHub", "categoria": "Catálogo / Governança", "tipo": "Open Source", "link": "https://datahubproject.io/", "resumo": "Plataforma robusta (LinkedIn), excelente para ecossistemas complexos.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 5},
@@ -30,40 +30,42 @@ dados = [
     {"nome": "Oracle", "categoria": "Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.oracle.com/database/", "resumo": "Banco relacional tradicional, altíssima resiliência e custo.", "facilidade_instalacao": 1, "suporte": 5, "flexibilidade": 2},
     {"nome": "Apache Kafka", "categoria": "Streaming de Dados", "tipo": "Open Source", "link": "https://kafka.apache.org/", "resumo": "Plataforma de streaming de eventos em tempo real.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 5},
     {"nome": "Schema Registry", "categoria": "Streaming de Dados", "tipo": "Open Source", "link": "https://docs.confluent.io/platform/current/schema-registry/index.html", "resumo": "Garante que eventos sigam um formato de contrato rígido.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
-            # --- NOVA FERRAMENTA ADICIONADA AQUI ---
+
     {"nome": "Scriptcase", "categoria": "Aplicações e BI (RAD)", "tipo": "Comercial / Pago", "link": "https://www.scriptcase.com.br/", "resumo": "Plataforma de desenvolvimento rápido (RAD) em PHP para criar sistemas web, relatórios e painéis analíticos integrados a bancos de dados.", "facilidade_instalacao": 4, "suporte": 4, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: PENTAHO ---
+   
     {"nome": "Pentaho", "categoria": "Integração e BI", "tipo": "Open Source", "link": "https://pentaho.com/", "resumo": "Plataforma consolidada de Integração de Dados (ETL) e Business Intelligence, que permite construir pipelines complexos através de uma interface visual.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 4},
-# --- NOVA FERRAMENTA: POSTGRESQL ---
+
     {"nome": "PostgreSQL", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://www.postgresql.org/", "resumo": "Banco de dados relacional open source mais avançado do mundo, conhecido por sua altíssima confiabilidade, integridade de dados e extensibilidade.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
-    # --- NOVA FERRAMENTA: ALATION ---
+   
     {"nome": "Alation", "categoria": "Catálogo / Governança", "tipo": "Comercial / Pago", "link": "https://www.alation.com/", "resumo": "Plataforma líder em inteligência de dados empresarial, com forte foco em catálogo colaborativo, governança ativa e adoção por usuários de negócios.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: ATACCAMA ONE ---
+    
     {"nome": "Ataccama ONE", "categoria": "Catálogo / Governança", "tipo": "Comercial / Pago", "link": "https://www.ataccama.com/", "resumo": "Plataforma unificada que integra qualidade de dados, Master Data Management (MDM) e catálogo com automação baseada em IA.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: COLLIBRA ---
+    
     {"nome": "Collibra", "categoria": "Catálogo / Governança", "tipo": "Comercial / Pago", "link": "https://www.collibra.com/", "resumo": "Plataforma enterprise de altíssimo nível focada em governança, gestão de políticas, glossário de negócios e fluxos de aprovação (workflows).", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: ERWIN DATA INTELLIGENCE ---
+    
     {"nome": "Erwin Data Intelligence", "categoria": "Catálogo / Governança", "tipo": "Comercial / Pago", "link": "https://www.quest.com/solutions/data", "resumo": "Plataforma corporativa tradicional que unifica modelagem de dados, catálogo e linhagem automatizada, criando uma ponte sólida entre TI e negócios.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: IBM Cloud Pak ---
+    
     {"nome": "IBM Cloud Pak for Data", "categoria": "Plataforma de Dados e IA", "tipo": "Comercial / Pago", "link": "https://www.ibm.com/products/cloud-pak-for-data", "resumo": "Plataforma corporativa unificada de Data Fabric. Centraliza governança avançada e oferece um ambiente completo para a validação e construção de modelos estatísticos e machine learning.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: ROCKET DATA INTELLIGENCE ---
+    
     {"nome": "Rocket Data Intelligence", "categoria": "Catálogo / Governança", "tipo": "Comercial / Pago", "link": "https://www.rocketsoftware.com/products/rocket-data-intelligence", "resumo": "Plataforma avançada de descoberta e governança (antiga ASG). Destaca-se por mapear a linhagem de ponta a ponta, conectando sistemas legados aos ecossistemas de nuvem modernos.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
-    # --- NOVA FERRAMENTA: OKD KUBERNETES ---
+   
     {"nome": "OKD (Kubernetes)", "categoria": "Infraestrutura / Orquestração", "tipo": "Open Source", "link": "https://www.okd.io/", "resumo": "A distribuição comunitária do Kubernetes que baseia o Red Hat OpenShift. Orquestra containers com alta escalabilidade, ideal para suportar microsserviços e motores de Big Data.", "facilidade_instalacao": 2, "suporte": 4, "flexibilidade": 5},
-    # --- NOVA FERRAMENTA: DOCKER ---
+    
     {"nome": "Docker", "categoria": "Infraestrutura / Orquestração", "tipo": "Open Source", "link": "https://www.docker.com/", "resumo": "Plataforma padrão da indústria para a criação e execução de aplicações em contentores isolados. Garante que o ambiente de pesquisa e os modelos estatísticos corram de forma idêntica em qualquer máquina.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
-    # --- NOVAS FERRAMENTAS: ESTEIRA DE DEVOPS E REGISTRO ---
+    
     {"nome": "GitLab", "categoria": "DevOps / CI/CD", "tipo": "Open Source", "link": "https://about.gitlab.com/", "resumo": "Plataforma completa de DevOps em uma única aplicação. Oferece repositório de código fonte (Git) robusto, gestão de projetos e esteiras de CI/CD nativas.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5},
     {"nome": "GitLab Runner", "categoria": "DevOps / CI/CD", "tipo": "Open Source", "link": "https://docs.gitlab.com/runner/", "resumo": "Agente de execução leve e escalável que roda os pipelines de CI/CD definidos no GitLab, automatizando a construção, os testes e o deploy da arquitetura.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
     {"nome": "GitLab Container Registry", "categoria": "DevOps / CI/CD", "tipo": "Open Source", "link": "https://docs.gitlab.com/ee/user/packages/container_registry/", "resumo": "Registro de contêineres seguro e totalmente integrado ao GitLab. Permite armazenar e gerenciar imagens Docker de forma contínua junto ao código-fonte.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 4},
     {"nome": "Harbor", "categoria": "Infraestrutura / Orquestração", "tipo": "Open Source", "link": "https://goharbor.io/", "resumo": "Registro de contêineres cloud-native confiável. Ele armazena, assina e escaneia imagens Docker em busca de vulnerabilidades, sendo o parceiro ideal do Kubernetes para segurança.", "facilidade_instalacao": 3, "suporte": 4, "flexibilidade": 4},
-    # --- NOVAS FERRAMENTAS: AJUSTES DO DIAGRAMA ---
+    
     {"nome": "Apache Airflow", "categoria": "Orquestração / Ingestão", "tipo": "Open Source", "link": "https://airflow.apache.org/", "resumo": "Plataforma padrão-ouro para programar, orquestrar e monitorar fluxos de trabalho (pipelines) de dados em lote.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5},
     {"nome": "Fivetran", "categoria": "Orquestração / Ingestão", "tipo": "Comercial / Pago", "link": "https://www.fivetran.com/", "resumo": "Serviço gerenciado que sincroniza dados de diversas fontes para o seu Data Warehouse com zero configuração (ELT).", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 3},
     {"nome": "Snowflake", "categoria": "Processamento / Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.snowflake.com/", "resumo": "Plataforma de dados em nuvem (Data Cloud) que funciona como Data Warehouse gerenciado, ideal para processamento analítico em lote.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 4},
-    # --- NOVAS FERRAMENTAS: BANCOS NOSQL E GRAFOS ---
+    
     {"nome": "MongoDB", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://www.mongodb.com/", "resumo": "Banco de dados NoSQL orientado a documentos (JSON). Ideal para receber dados não-estruturados ou semi-estruturados com grande flexibilidade.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
-    {"nome": "Neo4j", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://neo4j.com/", "resumo": "Banco de dados em grafos líder de mercado. Perfeito para mapear relacionamentos complexos, ligações estruturais e redes de conexão.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4}
+    {"nome": "Neo4j", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://neo4j.com/", "resumo": "Banco de dados em grafos líder de mercado. Perfeito para mapear relacionamentos complexos, ligações estruturais e redes de conexão.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
+    {"nome": "IBM Informix", "categoria": "Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.ibm.com/products/informix", "resumo": "Banco de dados relacional de altíssimo desempenho, amplamente conhecido por sua extrema robustez em transações (OLTP), IoT e dados de séries temporais.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 4},
+    {"nome": "Elasticsearch", "categoria": "Motor de Busca / Analytics", "tipo": "Open Source", "link": "https://www.elastic.co/pt/elasticsearch/", "resumo": "Motor de busca e análise distribuído. É o padrão absoluto da indústria para indexação ultrarrápida de textos longos, documentos complexos e logs de sistema.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5}
     ]
 df = pd.DataFrame(dados)
 
@@ -79,7 +81,7 @@ cenario_dados = st.sidebar.radio("2. Comportamento dos dados?", ("Processamento 
 
 # --- FILTRO NATUREZA DO ARMAZENAMENTO POLIGLOTA ---
 natureza_dados = st.sidebar.multiselect(
-    "2.1. Como a organização lida com o armazenamento principal? (Pode marcar mais de uma opção)",
+    "Como a organização lida com o armazenamento principal? (Pode marcar mais de uma opção)",
     [
         "Dados altamente estruturados (Relacional / Metadados)",
         "Dados não-estruturados ou flexíveis (Documentos, Textos longos, Imagens)",
