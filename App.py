@@ -77,15 +77,16 @@ st.sidebar.markdown("---")
 modelo_licenca = st.sidebar.radio("1. Preferência de licenciamento?", ("Mostrar Todos", "Apenas Open Source", "Apenas Comercial / Pago"))
 cenario_dados = st.sidebar.radio("2. Comportamento dos dados?", ("Processamento em Lote (Lakehouse, Histórico)", "Streaming em Tempo Real (Eventos)"))
 
-# --- FILTRO NATUREZA DO ARMAZENAMENTO ---
-natureza_dados = st.sidebar.radio(
-    "Como a organização lida com o armazenamento principal?",
-    (
-        "Dados altamente estruturados (Precisa de banco próprio relacional)",
-        "Dados não-estruturados ou flexíveis de diversas fontes (Documentos/JSON)",
+# --- FILTRO NATUREZA DO ARMAZENAMENTO POLIGLOTA ---
+natureza_dados = st.sidebar.multiselect(
+    "2.1. Como a organização lida com o armazenamento principal? (Pode marcar mais de uma opção)",
+    [
+        "Dados altamente estruturados (Relacional / Metadados)",
+        "Dados não-estruturados ou flexíveis (Documentos, Textos longos, Imagens)",
         "Foco em mapear conexões e relacionamentos complexos (Grafos)",
-        "Análise histórica massiva de bilhões de linhas (Data Lake/Warehouse)"
-    )
+        "Análise histórica massiva (Data Lakehouse)"
+    ],
+    default=["Dados altamente estruturados (Relacional / Metadados)"]
 )
 
 # --- FILTRO FOCO DA GOVERNANÇA ---
@@ -109,19 +110,36 @@ st.subheader("🗺️ Desenho da Arquitetura Recomendada")
 
 camada_ingestao, camada_armazenamento, camada_processamento, camada_semantica_tool, camada_governanca, justificativa = "", "", "", "", "", ""
 
-# 1. Lógica do Armazenamento (Banco de Dados)
-if natureza_dados == "Dados altamente estruturados (Precisa de banco próprio relacional)":
-    camada_armazenamento = "Oracle" if modelo_licenca == "Apenas Comercial / Pago" else "PostgreSQL"
-    justificativa_banco = f"Para o armazenamento, o {camada_armazenamento} garante integridade relacional rígida. "
-elif natureza_dados == "Dados não-estruturados ou flexíveis de diversas fontes (Documentos/JSON)":
-    camada_armazenamento = "MongoDB"
-    justificativa_banco = "Para o armazenamento, o MongoDB traz flexibilidade NoSQL para documentos variáveis. "
-elif natureza_dados == "Foco em mapear conexões e relacionamentos complexos (Grafos)":
-    camada_armazenamento = "Neo4j"
-    justificativa_banco = "Para o armazenamento, o Neo4j otimiza consultas em redes e relacionamentos estruturais. "
-else:
-    camada_armazenamento = "Snowflake" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Iceberg"
-    justificativa_banco = f"Para o armazenamento analítico massivo, optou-se pelo {camada_armazenamento}. "
+# 1. Lógica do Armazenamento Poliglota (Banco de Dados)
+bancos_selecionados = []
+justificativas_banco = []
+
+if "Dados altamente estruturados (Relacional / Metadados)" in natureza_dados:
+    banco_rel = "Oracle" if modelo_licenca == "Apenas Comercial / Pago" else "PostgreSQL"
+    bancos_selecionados.append(banco_rel)
+    justificativas_banco.append(f"O {banco_rel} garantirá a integridade relacional e transacional rígida dos metadados. ")
+
+if "Dados não-estruturados ou flexíveis (Documentos, Textos longos, Imagens)" in natureza_dados:
+    bancos_selecionados.append("MongoDB")
+    justificativas_banco.append("O MongoDB trará a flexibilidade NoSQL necessária para acomodar documentos variáveis e indexação de arquivos. ")
+
+if "Foco em mapear conexões e relacionamentos complexos (Grafos)" in natureza_dados:
+    bancos_selecionados.append("Neo4j")
+    justificativas_banco.append("O Neo4j foi incluído para permitir consultas de altíssima performance em vínculos e relacionamentos estruturais complexos. ")
+
+if "Análise histórica massiva (Data Lakehouse)" in natureza_dados:
+    banco_lake = "Snowflake" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Iceberg"
+    bancos_selecionados.append(banco_lake)
+    justificativas_banco.append(f"O {banco_lake} servirá como repositório analítico escalável para o cruzamento de dados históricos em massa. ")
+
+# Prevenção: Se o usuário desmarcar tudo, define um padrão
+if not bancos_selecionados:
+    bancos_selecionados = ["Apache Iceberg"]
+    justificativas_banco = ["O Apache Iceberg foi definido como repositório padrão. "]
+
+# Junta as ferramentas com o sinal de soma (+) para o diagrama visual
+camada_armazenamento = " + ".join(bancos_selecionados)
+justificativa_banco = "".join(justificativas_banco)
 
 # 2. Lógica da Governança
 if foco_governanca == "Glossário, políticas e democratização (Foco em Negócios/Compliance)":
