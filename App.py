@@ -77,7 +77,15 @@ filtro_categoria = st.sidebar.selectbox("0. Filtrar Tabela por Categoria?", cate
 
 st.sidebar.markdown("---")
 modelo_licenca = st.sidebar.radio("1. Preferência de licenciamento?", ("Mostrar Todos", "Apenas Open Source", "Apenas Comercial / Pago"))
-cenario_dados = st.sidebar.radio("2. Comportamento dos dados?", ("Processamento em Lote (Lakehouse, Histórico)", "Streaming em Tempo Real (Eventos)"))
+# --- FILTRO ATUALIZADO: COMPORTAMENTO DOS DADOS (INGESTÃO POLIGLOTA) ---
+cenario_dados = st.sidebar.multiselect(
+    "2. Comportamento dos dados na Ingestão? (Pode marcar ambos)",
+    [
+        "Processamento em Lote (Lakehouse, Histórico)",
+        "Streaming em Tempo Real (Eventos)"
+    ],
+    default=["Processamento em Lote (Lakehouse, Histórico)"]
+)
 
 # --- FILTRO NATUREZA DO ARMAZENAMENTO POLIGLOTA ---
 natureza_dados = st.sidebar.multiselect(
@@ -102,7 +110,7 @@ foco_governanca = st.sidebar.radio(
 )
 
 exige_semantica = st.sidebar.checkbox("3. Implementar Camada Semântica?", value=True)
-exige_devops = st.sidebar.checkbox("4. Exigir esteira de automação CI/CD (MLOps/DataOps)?", value=False)
+exige_devops = st.sidebar.checkbox("4. Exige esteira de automação CI/CD (MLOps/DataOps)?", value=False)
 
 st.sidebar.markdown("---")
 nota_suporte = st.sidebar.slider("Suporte Mínimo (1 a 5)", 1, 5, 1)
@@ -159,23 +167,37 @@ else:
         camada_governanca = "DataHub" if "Streaming" in cenario_dados else "OpenMetadata"
     justificativa_gov = f"O {camada_governanca} foi escolhido para rastrear a linhagem técnica ponta a ponta para a engenharia. "
 
-# 3. Lógica do Ecossistema (Ingestão e Processamento)
-if modelo_licenca == "Apenas Comercial / Pago":
-    if "Streaming" in cenario_dados:
-        camada_ingestao, camada_processamento = "Apache Kafka", "Apache Spark"
-        justificativa_eco = "O Kafka gerencia a mensageria em tempo real, processado pelo Spark. "
-    else: 
-        camada_ingestao, camada_processamento = "Fivetran", "Databricks"
-        justificativa_eco = "O Fivetran automatiza a ingestão de lotes, com transformações no Databricks. "
-    camada_semantica_tool = "Looker" if exige_semantica else "Não implementada"
-else:
-    if "Streaming" in cenario_dados:
-        camada_ingestao, camada_processamento = "Apache Kafka", "Apache Spark"
-        justificativa_eco = "O ecossistema flui com Kafka na mensageria e Spark no processamento contínuo. "
-    else: 
-        camada_ingestao, camada_processamento = "Apache Airflow", "Trino + DuckDB"
-        justificativa_eco = "O Airflow orquestra as rotinas, sendo processado pelo motor distribuído do Trino e DuckDB. "
-    camada_semantica_tool = "Cube" if exige_semantica else "Não implementada"
+# 3. Lógica do Ecossistema Poliglota (Ingestão e Processamento)
+ingestoes_selecionadas = []
+processamentos_selecionados = []
+justificativas_eco = []
+
+if "Processamento em Lote (Lakehouse, Histórico)" in cenario_dados:
+    ing_lote = "Fivetran" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Airflow"
+    proc_lote = "Databricks" if modelo_licenca == "Apenas Comercial / Pago" else "Trino + DuckDB"
+    ingestoes_selecionadas.append(ing_lote)
+    processamentos_selecionados.append(proc_lote)
+    justificativas_eco.append(f"O {ing_lote} orquestrará a ingestão de lotes históricos massivos, com transformações via {proc_lote}. ")
+
+if "Streaming em Tempo Real (Eventos)" in cenario_dados:
+    ing_stream = "Apache Kafka"
+    proc_stream = "Apache Spark"
+    ingestoes_selecionadas.append(ing_stream)
+    processamentos_selecionados.append(proc_stream)
+    justificativas_eco.append(f"O {ing_stream} gerenciará a mensageria de eventos em tempo real, que serão processados continuamente pelo {proc_stream}. ")
+
+# Prevenção: Se o usuário desmarcar tudo
+if not ingestoes_selecionadas:
+    ingestoes_selecionadas = ["Apache Airflow"]
+    processamentos_selecionados = ["Trino + DuckDB"]
+    justificativas_eco = ["O Apache Airflow orquestrará as rotinas padrão, sendo processado pelo motor distribuído do Trino e DuckDB. "]
+
+camada_ingestao = " + ".join(ingestoes_selecionadas)
+camada_processamento = " + ".join(processamentos_selecionados)
+justificativa_eco = "".join(justificativas_eco)
+
+# Camada semântica segue a mesma regra do licenciamento
+camada_semantica_tool = ("Looker" if modelo_licenca == "Apenas Comercial / Pago" else "Cube") if exige_semantica else "Não implementada"
 
 # Junta a redação final dinamicamente
 # 4. Lógica de DevOps / MLOps
