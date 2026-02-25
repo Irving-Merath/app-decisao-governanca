@@ -65,7 +65,9 @@ dados = [
     {"nome": "MongoDB", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://www.mongodb.com/", "resumo": "Banco de dados NoSQL orientado a documentos (JSON). Ideal para receber dados não-estruturados ou semi-estruturados com grande flexibilidade.", "facilidade_instalacao": 4, "suporte": 5, "flexibilidade": 5},
     {"nome": "Neo4j", "categoria": "Banco de Dados", "tipo": "Open Source", "link": "https://neo4j.com/", "resumo": "Banco de dados em grafos líder de mercado. Perfeito para mapear relacionamentos complexos, ligações estruturais e redes de conexão.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 4},
     {"nome": "IBM Informix", "categoria": "Banco de Dados", "tipo": "Comercial / Pago", "link": "https://www.ibm.com/products/informix", "resumo": "Banco de dados relacional de altíssimo desempenho, amplamente conhecido por sua extrema robustez em transações (OLTP), IoT e dados de séries temporais.", "facilidade_instalacao": 2, "suporte": 5, "flexibilidade": 4},
-    {"nome": "Elasticsearch", "categoria": "Motor de Busca / Analytics", "tipo": "Open Source", "link": "https://www.elastic.co/pt/elasticsearch/", "resumo": "Motor de busca e análise distribuído. É o padrão absoluto da indústria para indexação ultrarrápida de textos longos, documentos complexos e logs de sistema.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5}
+    {"nome": "Elasticsearch", "categoria": "Motor de Busca / Analytics", "tipo": "Open Source", "link": "https://www.elastic.co/pt/elasticsearch/", "resumo": "Motor de busca e análise distribuído. É o padrão absoluto da indústria para indexação ultrarrápida de textos longos, documentos complexos e logs de sistema.", "facilidade_instalacao": 3, "suporte": 5, "flexibilidade": 5},
+    {"nome": "Apache Superset", "categoria": "Aplicações e BI", "tipo": "Open Source", "link": "https://superset.apache.org/", "resumo": "Plataforma moderna de exploração de dados corporativos. Permite criar painéis visuais (dashboards) interativos com grande facilidade.", "facilidade_instalacao": 4, "suporte": 4, "flexibilidade": 5},
+    {"nome": "JupyterLab", "categoria": "Data Science e IA", "tipo": "Open Source", "link": "https://jupyter.org/", "resumo": "Ambiente de desenvolvimento interativo padrão-ouro para cadernos (notebooks) de Data Science, rodando códigos Python, R e Julia.", "facilidade_instalacao": 5, "suporte": 5, "flexibilidade": 5}
     ]
 df = pd.DataFrame(dados)
 
@@ -109,8 +111,13 @@ foco_governanca = st.sidebar.radio(
     )
 )
 
-exige_semantica = st.sidebar.checkbox("3. Implementar Camada Semântica?", value=True)
-exige_devops = st.sidebar.checkbox("4. Exige esteira de automação CI/CD (MLOps/DataOps)?", value=False)
+# --- FILTRO ATUALIZADO: CONSUMO COM CHECKBOXES ---
+st.sidebar.markdown("**3. Como os dados serão consumidos?**")
+consumo_bi = st.sidebar.checkbox("Painéis de BI e Relatórios Gerenciais", value=True)
+consumo_ds = st.sidebar.checkbox("Data Science, ML e IA Avançada", value=False)
+consumo_sem = st.sidebar.checkbox("Camada Semântica (Métricas centralizadas)", value=False)
+
+exige_devops = st.sidebar.checkbox("4. Exigir esteira de automação CI/CD (MLOps)?", value=False)
 
 st.sidebar.markdown("---")
 nota_suporte = st.sidebar.slider("Suporte Mínimo (1 a 5)", 1, 5, 1)
@@ -119,7 +126,8 @@ nota_flexibilidade = st.sidebar.slider("Flexibilidade Mínima (1 a 5)", 1, 5, 1)
 # --- 4. MOTOR DA ARQUITETURA ---
 st.subheader("🗺️ Desenho da Arquitetura Recomendada")
 
-camada_ingestao, camada_armazenamento, camada_processamento, camada_semantica_tool, camada_governanca, justificativa = "", "", "", "", "", ""
+camada_ingestao, camada_armazenamento, camada_processamento, camada_consumo, camada_governanca, camada_devops = "", "", "", "", "", ""
+justificativa = ""
 
 # 1. Lógica do Armazenamento Poliglota (Banco de Dados)
 bancos_selecionados = []
@@ -132,23 +140,21 @@ if "Dados altamente estruturados (Relacional / Metadados)" in natureza_dados:
 
 if "Dados não-estruturados ou flexíveis (Documentos, Textos longos, Imagens)" in natureza_dados:
     bancos_selecionados.append("MongoDB")
-    justificativas_banco.append("O MongoDB trará a flexibilidade NoSQL necessária para acomodar documentos variáveis e indexação de arquivos. ")
+    justificativas_banco.append("O MongoDB trará a flexibilidade NoSQL necessária para acomodar documentos variáveis. ")
 
 if "Foco em mapear conexões e relacionamentos complexos (Grafos)" in natureza_dados:
     bancos_selecionados.append("Neo4j")
-    justificativas_banco.append("O Neo4j foi incluído para permitir consultas de altíssima performance em vínculos e relacionamentos estruturais complexos. ")
+    justificativas_banco.append("O Neo4j foi incluído para permitir consultas de altíssima performance em vínculos e redes. ")
 
 if "Análise histórica massiva (Data Lakehouse)" in natureza_dados:
     banco_lake = "Snowflake" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Iceberg"
     bancos_selecionados.append(banco_lake)
-    justificativas_banco.append(f"O {banco_lake} servirá como repositório analítico escalável para o cruzamento de dados históricos em massa. ")
+    justificativas_banco.append(f"O {banco_lake} servirá como repositório analítico escalável para dados históricos em massa. ")
 
-# Prevenção: Se o usuário desmarcar tudo, define um padrão
 if not bancos_selecionados:
     bancos_selecionados = ["Apache Iceberg"]
     justificativas_banco = ["O Apache Iceberg foi definido como repositório padrão. "]
 
-# Junta as ferramentas com o sinal de soma (+) para o diagrama visual
 camada_armazenamento = " + ".join(bancos_selecionados)
 justificativa_banco = "".join(justificativas_banco)
 
@@ -160,11 +166,10 @@ elif foco_governanca == "Qualidade de dados automatizada e Master Data Managemen
     camada_governanca = "Ataccama ONE" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Atlas"
     justificativa_gov = f"A governança foca em confiabilidade e MDM através do {camada_governanca}, garantindo dados limpos. "
 else: 
-    # Foco em TI e Linhagem Técnica
     if modelo_licenca == "Apenas Comercial / Pago":
         camada_governanca = "Rocket Data Intelligence" 
     else:
-        camada_governanca = "DataHub" if "Streaming" in cenario_dados else "OpenMetadata"
+        camada_governanca = "DataHub" if "Streaming em Tempo Real (Eventos)" in cenario_dados else "OpenMetadata"
     justificativa_gov = f"O {camada_governanca} foi escolhido para rastrear a linhagem técnica ponta a ponta para a engenharia. "
 
 # 3. Lógica do Ecossistema Poliglota (Ingestão e Processamento)
@@ -177,45 +182,65 @@ if "Processamento em Lote (Lakehouse, Histórico)" in cenario_dados:
     proc_lote = "Databricks" if modelo_licenca == "Apenas Comercial / Pago" else "Trino + DuckDB"
     ingestoes_selecionadas.append(ing_lote)
     processamentos_selecionados.append(proc_lote)
-    justificativas_eco.append(f"O {ing_lote} orquestrará a ingestão de lotes históricos massivos, com transformações via {proc_lote}. ")
+    justificativas_eco.append(f"O {ing_lote} orquestrará a ingestão de lotes, com transformações via {proc_lote}. ")
 
 if "Streaming em Tempo Real (Eventos)" in cenario_dados:
     ing_stream = "Apache Kafka"
     proc_stream = "Apache Spark"
     ingestoes_selecionadas.append(ing_stream)
     processamentos_selecionados.append(proc_stream)
-    justificativas_eco.append(f"O {ing_stream} gerenciará a mensageria de eventos em tempo real, que serão processados continuamente pelo {proc_stream}. ")
+    justificativas_eco.append(f"O {ing_stream} gerenciará a mensageria em tempo real, processada continuamente pelo {proc_stream}. ")
 
-# Prevenção: Se o usuário desmarcar tudo
 if not ingestoes_selecionadas:
     ingestoes_selecionadas = ["Apache Airflow"]
     processamentos_selecionados = ["Trino + DuckDB"]
-    justificativas_eco = ["O Apache Airflow orquestrará as rotinas padrão, sendo processado pelo motor distribuído do Trino e DuckDB. "]
+    justificativas_eco = ["O Apache Airflow orquestrará as rotinas padrão, sendo processado pelo Trino e DuckDB. "]
 
 camada_ingestao = " + ".join(ingestoes_selecionadas)
 camada_processamento = " + ".join(processamentos_selecionados)
 justificativa_eco = "".join(justificativas_eco)
 
-# Camada semântica segue a mesma regra do licenciamento
-camada_semantica_tool = ("Looker" if modelo_licenca == "Apenas Comercial / Pago" else "Cube") if exige_semantica else "Não implementada"
-
-# Junta a redação final dinamicamente
 # 4. Lógica de DevOps / MLOps
-camada_devops = ""
 justificativa_devops = ""
 if exige_devops:
     if modelo_licenca == "Apenas Comercial / Pago":
         camada_devops = "GitLab Enterprise + Harbor"
     else:
         camada_devops = "GitLab + GitLab Runner + Harbor"
-    justificativa_devops = f" Para garantir a reprodutibilidade dos modelos e a automação de testes, o ecossistema é suportado por uma esteira de CI/CD utilizando {camada_devops}. "
+    justificativa_devops = f"Para automação de testes, o ecossistema é suportado por uma esteira de CI/CD utilizando {camada_devops}. "
+
+# 5. Lógica do Consumo Poliglota (Lendo Checkboxes)
+consumos_selecionados = []
+justificativas_consumo = []
+
+if consumo_bi:
+    tool_bi = "Looker" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Superset"
+    consumos_selecionados.append(tool_bi)
+    justificativas_consumo.append(f"A exploração visual e os dashboards ficarão a cargo do {tool_bi}. ")
+
+if consumo_ds:
+    tool_ds = "IBM Cloud Pak for Data" if modelo_licenca == "Apenas Comercial / Pago" else "JupyterLab"
+    consumos_selecionados.append(tool_ds)
+    justificativas_consumo.append(f"O ambiente interativo para modelagem estatística será provido pelo {tool_ds}. ")
+
+if consumo_sem:
+    tool_sem = "Looker (LookML)" if modelo_licenca == "Apenas Comercial / Pago" else "Cube"
+    if "Looker" not in consumos_selecionados: 
+        consumos_selecionados.append(tool_sem)
+    justificativas_consumo.append(f"O {tool_sem} atuará como Camada Semântica universal, garantindo consistência matemática. ")
+
+if not consumos_selecionados:
+    consumos_selecionados = ["Consultas SQL Diretas"]
+    justificativas_consumo = ["O consumo será feito via consultas diretas ao banco. "]
+
+camada_consumo = " + ".join(consumos_selecionados)
+justificativa_consumo = "".join(justificativas_consumo)
 
 # Junta a redação final dinamicamente
-justificativa = justificativa_banco + justificativa_eco + justificativa_gov + justificativa_devops
-
+justificativa = justificativa_banco + justificativa_eco + justificativa_gov + justificativa_consumo + justificativa_devops
 st.write(f"**Visão Geral:** {justificativa}")
 
-# Constrói o código do diagrama Mermaid dinamicamente
+# Constrói o código do diagrama Mermaid dinamicamente atualizado
 mermaid_code = f"""graph LR
     subgraph Ingestao ["Ingestão e Dados Brutos"]
         A["{camada_ingestao}"]
@@ -224,46 +249,44 @@ mermaid_code = f"""graph LR
         B["{camada_armazenamento}"]
         C["{camada_processamento}"]
     end
-    subgraph Consumo ["Consumo e Negócios"]
-        D["{camada_semantica_tool}"]
-        E["Aplicações (BI, Python, R)"]
+    subgraph Consumo ["Ponto de Consumo e Negócios"]
+        D["{camada_consumo}"]
     end
-    subgraph Governanca ["Governança"]
+    subgraph Governanca ["Governança de Ponta a Ponta"]
         F["{camada_governanca}"]
     end
 """
 
-# Adiciona DevOps no Mermaid se o usuário pedir
 if exige_devops:
-    mermaid_code += f"""    subgraph DevOps ["Orquestração de Código e CI/CD"]
+    mermaid_code += f"""    subgraph DevOps ["Orquestração e MLOps"]
         G["{camada_devops}"]
     end
 """
 
-# Conexões principais
-mermaid_code += "    A -->|\"Carrega Dados\"| B\n    B -->|\"Consulta\"| C\n"
-
-if exige_semantica:
-    mermaid_code += "    C -->|\"Padroniza Métricas\"| D\n    D -->|\"Consome\"| E\n"
-else:
-    mermaid_code += "    C -->|\"Consome Direto\"| E\n"
+# Conexões principais (Removi aspas internas para evitar bugs no renderizador)
+mermaid_code += "    A -->|Carrega Dados| B\n    B -->|Processa e Transforma| C\n    C -->|Disponibiliza| D\n"
 
 # Conexões de Governança
 mermaid_code += "    F -.- A\n    F -.- B\n    F -.- C\n    F -.- D\n"
 
-# Conexões de DevOps (apontando para o processamento e consumo)
+# Conexões de DevOps
 if exige_devops:
-    mermaid_code += "    G -.->|\"Automatiza Deploy\"| C\n    G -.->|\"Testa Modelos\"| E\n"
+    mermaid_code += "    G -.->|Automatiza Pipeline| C\n    G -.->|Deploy de Modelos| D\n"
 
 # Estilos Visuais
 mermaid_code += "    style F fill:#4a148c,stroke:#fff,color:#fff\n    style D fill:#00695c,stroke:#fff,color:#fff\n"
 if exige_devops:
     mermaid_code += "    style G fill:#bf360c,stroke:#fff,color:#fff\n"
 
+# --- CODIFICAÇÃO DA IMAGEM DO DIAGRAMA ---
+import base64
 graphbytes = mermaid_code.encode("utf8")
 base64_bytes = base64.b64encode(graphbytes)
 base64_string = base64_bytes.decode('ascii')
+
+# Exibe o diagrama gerado na tela do aplicativo
 st.image(f"https://mermaid.ink/svg/{base64_string}", use_container_width=True)
+
 
 # --- 5. LÓGICA DE GERAÇÃO DO DOCUMENTO WORD (.DOCX) ---
 def gerar_relatorio_word(df_filtrado, b64_diagrama):
@@ -283,8 +306,13 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
         f"Ingestão de dados brutos, Armazenamento e processamento, e Consumo e negócios. Para este projeto, "
         f"foi selecionado {camada_governanca} para a Governança; {camada_ingestao} para a Ingestão; "
         f"{camada_armazenamento} e {camada_processamento} para o Armazenamento e processamento; e "
-        f"{camada_semantica_tool} para a padronização e consumo."
+        f"{camada_consumo} para a padronização e consumo."
     )
+    
+    # Adiciona DevOps no resumo caso exista
+    if camada_devops:
+        resumo_macro += f" Além disso, a automação, CI/CD e MLOps serão orquestrados por {camada_devops}."
+        
     doc.add_paragraph(resumo_macro)
     doc.add_paragraph(f"Detalhe da topologia: {justificativa}")
     
@@ -318,8 +346,8 @@ def gerar_relatorio_word(df_filtrado, b64_diagrama):
     # Justificativas Dinâmicas das Ferramentas
     doc.add_heading('4. Justificativa Detalhada por Ferramenta', level=1)
     
-    # Criar string unificada da arquitetura para descobrir quem é "titular"
-    str_arquitetura = f"{camada_ingestao} {camada_armazenamento} {camada_processamento} {camada_semantica_tool} {camada_governanca}"
+    # Criar string unificada da arquitetura para descobrir quem é "titular" (Atualizado com as variáveis novas)
+    str_arquitetura = f"{camada_ingestao} {camada_armazenamento} {camada_processamento} {camada_consumo} {camada_governanca} {camada_devops}"
     
     # Mapear titulares por categoria
     titulares_cat = {}
