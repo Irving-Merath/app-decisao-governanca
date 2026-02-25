@@ -102,6 +102,7 @@ foco_governanca = st.sidebar.radio(
 )
 
 exige_semantica = st.sidebar.checkbox("3. Implementar Camada Semântica?", value=True)
+exige_devops = st.sidebar.checkbox("4. Exigir esteira de automação CI/CD (MLOps/DataOps)?", value=False)
 
 st.sidebar.markdown("---")
 nota_suporte = st.sidebar.slider("Suporte Mínimo (1 a 5)", 1, 5, 1)
@@ -177,11 +178,22 @@ else:
     camada_semantica_tool = "Cube" if exige_semantica else "Não implementada"
 
 # Junta a redação final dinamicamente
-justificativa = justificativa_banco + justificativa_eco + justificativa_gov
+# 4. Lógica de DevOps / MLOps
+camada_devops = ""
+justificativa_devops = ""
+if exige_devops:
+    if modelo_licenca == "Apenas Comercial / Pago":
+        camada_devops = "GitLab Enterprise + Harbor"
+    else:
+        camada_devops = "GitLab + GitLab Runner + Harbor"
+    justificativa_devops = f" Para garantir a reprodutibilidade dos modelos e a automação de testes, o ecossistema é suportado por uma esteira de CI/CD utilizando {camada_devops}. "
+
+# Junta a redação final dinamicamente
+justificativa = justificativa_banco + justificativa_eco + justificativa_gov + justificativa_devops
 
 st.write(f"**Visão Geral:** {justificativa}")
 
-
+# Constrói o código do diagrama Mermaid dinamicamente
 mermaid_code = f"""graph LR
     subgraph Ingestao ["Ingestão e Dados Brutos"]
         A["{camada_ingestao}"]
@@ -197,14 +209,34 @@ mermaid_code = f"""graph LR
     subgraph Governanca ["Governança"]
         F["{camada_governanca}"]
     end
-    A -->|"Carrega Dados"| B
-    B -->|"Consulta"| C
 """
+
+# Adiciona DevOps no Mermaid se o usuário pedir
+if exige_devops:
+    mermaid_code += f"""    subgraph DevOps ["Orquestração de Código e CI/CD"]
+        G["{camada_devops}"]
+    end
+"""
+
+# Conexões principais
+mermaid_code += "    A -->|\"Carrega Dados\"| B\n    B -->|\"Consulta\"| C\n"
+
 if exige_semantica:
     mermaid_code += "    C -->|\"Padroniza Métricas\"| D\n    D -->|\"Consome\"| E\n"
 else:
     mermaid_code += "    C -->|\"Consome Direto\"| E\n"
-mermaid_code += "    F -.- A\n    F -.- B\n    F -.- C\n    F -.- D\n    style F fill:#4a148c,stroke:#fff,color:#fff\n    style D fill:#00695c,stroke:#fff,color:#fff"
+
+# Conexões de Governança
+mermaid_code += "    F -.- A\n    F -.- B\n    F -.- C\n    F -.- D\n"
+
+# Conexões de DevOps (apontando para o processamento e consumo)
+if exige_devops:
+    mermaid_code += "    G -.->|\"Automatiza Deploy\"| C\n    G -.->|\"Testa Modelos\"| E\n"
+
+# Estilos Visuais
+mermaid_code += "    style F fill:#4a148c,stroke:#fff,color:#fff\n    style D fill:#00695c,stroke:#fff,color:#fff\n"
+if exige_devops:
+    mermaid_code += "    style G fill:#bf360c,stroke:#fff,color:#fff\n"
 
 graphbytes = mermaid_code.encode("utf8")
 base64_bytes = base64.b64encode(graphbytes)
