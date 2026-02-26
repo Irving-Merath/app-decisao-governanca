@@ -79,15 +79,10 @@ filtro_categoria = st.sidebar.selectbox("0. Filtrar Tabela por Categoria?", cate
 
 st.sidebar.markdown("---")
 modelo_licenca = st.sidebar.radio("1. Preferência de licenciamento?", ("Mostrar Todos", "Apenas Open Source", "Apenas Comercial / Pago"))
-# --- FILTRO ATUALIZADO: COMPORTAMENTO DOS DADOS (INGESTÃO POLIGLOTA) ---
-cenario_dados = st.sidebar.multiselect(
-    "2. Comportamento dos dados na Ingestão? (Pode marcar ambos)",
-    [
-        "Processamento em Lote (Lakehouse, Histórico)",
-        "Streaming em Tempo Real (Eventos)"
-    ],
-    default=["Processamento em Lote (Lakehouse, Histórico)"]
-)
+# --- FILTRO ATUALIZADO: COMPORTAMENTO DOS DADOS (CHECKBOXES) ---
+st.sidebar.markdown("**2. Comportamento dos dados na Ingestão?**")
+ingestao_lote = st.sidebar.checkbox("Processamento em Lote (Lakehouse, Histórico)", value=True)
+ingestao_streaming = st.sidebar.checkbox("Streaming em Tempo Real (Eventos)", value=False)
 
 # --- FILTRO NATUREZA DO ARMAZENAMENTO POLIGLOTA ---
 natureza_dados = st.sidebar.multiselect(
@@ -169,22 +164,23 @@ else:
     if modelo_licenca == "Apenas Comercial / Pago":
         camada_governanca = "Rocket Data Intelligence" 
     else:
-        camada_governanca = "DataHub" if "Streaming em Tempo Real (Eventos)" in cenario_dados else "OpenMetadata"
+        # Atualizado para ler a nova variável do checkbox
+        camada_governanca = "DataHub" if ingestao_streaming else "OpenMetadata"
     justificativa_gov = f"O {camada_governanca} foi escolhido para rastrear a linhagem técnica ponta a ponta para a engenharia. "
 
-# 3. Lógica do Ecossistema Poliglota (Ingestão e Processamento)
+# 3. Lógica do Ecossistema Poliglota (Lendo Checkboxes)
 ingestoes_selecionadas = []
 processamentos_selecionados = []
 justificativas_eco = []
 
-if "Processamento em Lote (Lakehouse, Histórico)" in cenario_dados:
+if ingestao_lote:
     ing_lote = "Fivetran" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Airflow"
     proc_lote = "Databricks" if modelo_licenca == "Apenas Comercial / Pago" else "Trino + DuckDB"
     ingestoes_selecionadas.append(ing_lote)
     processamentos_selecionados.append(proc_lote)
     justificativas_eco.append(f"O {ing_lote} orquestrará a ingestão de lotes, com transformações via {proc_lote}. ")
 
-if "Streaming em Tempo Real (Eventos)" in cenario_dados:
+if ingestao_streaming:
     ing_stream = "Apache Kafka"
     proc_stream = "Apache Spark"
     ingestoes_selecionadas.append(ing_stream)
