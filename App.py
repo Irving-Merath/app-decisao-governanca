@@ -84,17 +84,12 @@ st.sidebar.markdown("**2. Comportamento dos dados na Ingestão?**")
 ingestao_lote = st.sidebar.checkbox("Processamento em Lote (Lakehouse, Histórico)", value=True)
 ingestao_streaming = st.sidebar.checkbox("Streaming em Tempo Real (Eventos)", value=False)
 
-# --- FILTRO NATUREZA DO ARMAZENAMENTO POLIGLOTA ---
-natureza_dados = st.sidebar.multiselect(
-    "Como a organização lida com o armazenamento principal? (Pode marcar mais de uma opção)",
-    [
-        "Dados altamente estruturados (Relacional / Metadados)",
-        "Dados não-estruturados ou flexíveis (Documentos, Textos longos, Imagens)",
-        "Foco em mapear conexões e relacionamentos complexos (Grafos)",
-        "Análise histórica massiva (Data Lakehouse)"
-    ],
-    default=["Dados altamente estruturados (Relacional / Metadados)"]
-)
+# --- FILTRO ATUALIZADO: NATUREZA DO ARMAZENAMENTO (CHECKBOXES) ---
+st.sidebar.markdown("**2.1. Como a organização lida com o armazenamento principal?**")
+armazenamento_relacional = st.sidebar.checkbox("Dados altamente estruturados (Relacional / Metadados)", value=True)
+armazenamento_nosql = st.sidebar.checkbox("Dados não-estruturados ou flexíveis (Documentos/Imagens)", value=False)
+armazenamento_grafos = st.sidebar.checkbox("Foco em mapear conexões e relacionamentos complexos (Grafos)", value=False)
+armazenamento_lakehouse = st.sidebar.checkbox("Análise histórica massiva (Data Lakehouse)", value=False)
 
 # --- FILTRO FOCO DA GOVERNANÇA ---
 foco_governanca = st.sidebar.radio(
@@ -124,24 +119,24 @@ st.subheader("🗺️ Desenho da Arquitetura Recomendada")
 camada_ingestao, camada_armazenamento, camada_processamento, camada_consumo, camada_governanca, camada_devops = "", "", "", "", "", ""
 justificativa = ""
 
-# 1. Lógica do Armazenamento Poliglota (Banco de Dados)
+# 1. Lógica do Armazenamento Poliglota (Lendo Checkboxes)
 bancos_selecionados = []
 justificativas_banco = []
 
-if "Dados altamente estruturados (Relacional / Metadados)" in natureza_dados:
+if armazenamento_relacional:
     banco_rel = "Oracle" if modelo_licenca == "Apenas Comercial / Pago" else "PostgreSQL"
     bancos_selecionados.append(banco_rel)
     justificativas_banco.append(f"O {banco_rel} garantirá a integridade relacional e transacional rígida dos metadados. ")
 
-if "Dados não-estruturados ou flexíveis (Documentos, Textos longos, Imagens)" in natureza_dados:
+if armazenamento_nosql:
     bancos_selecionados.append("MongoDB")
     justificativas_banco.append("O MongoDB trará a flexibilidade NoSQL necessária para acomodar documentos variáveis. ")
 
-if "Foco em mapear conexões e relacionamentos complexos (Grafos)" in natureza_dados:
+if armazenamento_grafos:
     bancos_selecionados.append("Neo4j")
     justificativas_banco.append("O Neo4j foi incluído para permitir consultas de altíssima performance em vínculos e redes. ")
 
-if "Análise histórica massiva (Data Lakehouse)" in natureza_dados:
+if armazenamento_lakehouse:
     banco_lake = "Snowflake" if modelo_licenca == "Apenas Comercial / Pago" else "Apache Iceberg"
     bancos_selecionados.append(banco_lake)
     justificativas_banco.append(f"O {banco_lake} servirá como repositório analítico escalável para dados históricos em massa. ")
